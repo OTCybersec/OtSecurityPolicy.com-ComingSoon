@@ -33,7 +33,7 @@ function postToGoogleScript(data) {
             console.error('HTTPS request error:', err);
             reject(err);
         });
-        req.setTimeout(10000, () => {
+        req.setTimeout(25000, () => {
             console.error('HTTPS request timed out');
             req.destroy(new Error('Request timed out'));
             reject(new Error('Request timed out'));
