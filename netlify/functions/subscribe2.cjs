@@ -1,14 +1,13 @@
-// Patch: Force redeploy to clear old node-fetch usage (2025-07-31)
-// Netlify Function: /netlify/functions/subscribe.js
+// Patch: subscribe2 function to force Netlify to deploy new function (2025-07-31)
+// Netlify Function: /netlify/functions/subscribe2.js
 // This function receives POST requests from your React app and forwards the email to your Google Apps Script endpoint.
-
 
 const https = require('https');
 
 function postToGoogleScript(data) {
     return new Promise((resolve, reject) => {
         const postData = JSON.stringify(data);
-        const url = new URL('https://script.google.com/macros/s/AKfycbxSOI1y0y530Q4tgEesP4oTETjOKNXj0e4Lht5AhDn95gUdKN6gFMWgtRC3WIalRXLJ/exec');
+        const url = new URL('https://script.google.com/macros/s/AKfycbxSOI1y0y530Q4tgEesP4oTETjOKNXj0e4Lht5AhDn95gUdKN6gFMWgtRC3WIalRXLJ/exec'); // Update this to your new deployment ID if it changes
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
@@ -18,7 +17,28 @@ function postToGoogleScript(data) {
             res.on('data', (chunk) => body += chunk);
             res.on('end', () => {
                 console.log('Google Script HTTP status:', res.statusCode);
-                if (res.statusCode < 200 || res.statusCode >= 300) {
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                    // Follow redirect
+                    const redirectUrl = res.headers.location;
+                    const redirectOptions = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    const redirectReq = https.request(redirectUrl, redirectOptions, (redirectRes) => {
+                        let redirectBody = '';
+                        redirectRes.on('data', (chunk) => redirectBody += chunk);
+                        redirectRes.on('end', () => {
+                            if (redirectRes.statusCode < 200 || redirectRes.statusCode >= 300) {
+                                reject(new Error('Google Script returned status ' + redirectRes.statusCode + ': ' + redirectBody));
+                            } else {
+                                resolve({ status: redirectRes.statusCode, body: redirectBody });
+                            }
+                        });
+                    });
+                    redirectReq.on('error', (err) => reject(err));
+                    redirectReq.write(postData);
+                    redirectReq.end();
+                } else if (res.statusCode < 200 || res.statusCode >= 300) {
                     console.error('Non-200 response from Google Script:', res.statusCode, body);
                     reject(new Error('Google Script returned status ' + res.statusCode + ': ' + body));
                 } else {

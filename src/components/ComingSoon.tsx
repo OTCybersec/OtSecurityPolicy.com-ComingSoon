@@ -14,7 +14,7 @@ const ComingSoon: React.FC = () => {
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSOI1y0y530Q4tgEesP4oTETjOKNXj0e4Lht5AhDn95gUdKN6gFMWgtRC3WIalRXLJ/exec';
 
   // Use Netlify Function endpoint
-  const NETLIFY_FUNCTION_URL = '/.netlify/functions/subscribe';
+  const NETLIFY_FUNCTION_URL = '/.netlify/functions/subscribe2';
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
