@@ -21,13 +21,13 @@ const ComingSoon: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(NETLIFY_FUNCTION_URL, {
+      const response = await fetch('/.netlify/functions/subscribe2', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, token: 'b7e2f8c1-4a6d-4e2a-9c3a-2e7b8d5f1a9c' }),
-        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          token: 'b7e2f8c1-4a6d-4e2a-9c3a-2e7b8d5f1a9c'
+        })
       });
       if (!response.ok) {
         throw new Error('Failed to subscribe');
