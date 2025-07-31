@@ -20,26 +20,26 @@ function postToGoogleScript(data) {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     // Log the redirect URL and method
                     console.log('Google Script redirect location:', res.headers.location);
-                    console.log('Following redirect with POST (current logic)');
-                    // Follow redirect
+                    console.log('Following redirect with GET (new logic)');
+                    // Follow redirect with GET
                     const redirectUrl = res.headers.location;
                     const redirectOptions = {
-                        method: 'POST',
+                        method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     };
                     const redirectReq = https.request(redirectUrl, redirectOptions, (redirectRes) => {
                         let redirectBody = '';
                         redirectRes.on('data', (chunk) => redirectBody += chunk);
                         redirectRes.on('end', () => {
+                            console.log('Redirect GET response status:', redirectRes.statusCode);
                             if (redirectRes.statusCode < 200 || redirectRes.statusCode >= 300) {
-                                reject(new Error('Google Script returned status ' + redirectRes.statusCode + ': ' + redirectBody));
+                                reject(new Error('Google Script redirect returned status ' + redirectRes.statusCode + ': ' + redirectBody));
                             } else {
                                 resolve({ status: redirectRes.statusCode, body: redirectBody });
                             }
                         });
                     });
                     redirectReq.on('error', (err) => reject(err));
-                    redirectReq.write(postData);
                     redirectReq.end();
                 } else if (res.statusCode < 200 || res.statusCode >= 300) {
                     console.error('Non-200 response from Google Script:', res.statusCode, body);
