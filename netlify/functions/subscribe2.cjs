@@ -20,14 +20,19 @@ function postToGoogleScript(data) {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     // Log the redirect URL and method
                     console.log('Google Script redirect location:', res.headers.location);
-                    console.log('Following redirect with GET (new logic)');
-                    // Follow redirect with GET
+                    console.log('Following redirect with GET and query params (new logic)');
+                    // Follow redirect with GET, appending email and token as query params
                     const redirectUrl = res.headers.location;
+                    const urlObj = new URL(redirectUrl);
+                    urlObj.searchParams.set('email', data.email);
+                    urlObj.searchParams.set('token', data.token);
+                    const finalUrl = urlObj.toString();
+                    console.log('Final redirect URL with params:', finalUrl);
                     const redirectOptions = {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     };
-                    const redirectReq = https.request(redirectUrl, redirectOptions, (redirectRes) => {
+                    const redirectReq = https.request(finalUrl, redirectOptions, (redirectRes) => {
                         let redirectBody = '';
                         redirectRes.on('data', (chunk) => redirectBody += chunk);
                         redirectRes.on('end', () => {
