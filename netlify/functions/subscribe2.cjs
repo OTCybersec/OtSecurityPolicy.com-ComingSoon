@@ -18,34 +18,9 @@ function postToGoogleScript(data) {
             res.on('end', () => {
                 console.log('Google Script HTTP status:', res.statusCode);
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                    // Log the redirect URL and method
+                    // Treat 302 as success (Google Apps Script redirect)
                     console.log('Google Script redirect location:', res.headers.location);
-                    console.log('Following redirect with GET and query params (new logic)');
-                    // Follow redirect with GET, appending email and token as query params
-                    const redirectUrl = res.headers.location;
-                    const urlObj = new URL(redirectUrl);
-                    urlObj.searchParams.set('email', data.email);
-                    urlObj.searchParams.set('token', data.token);
-                    const finalUrl = urlObj.toString();
-                    console.log('Final redirect URL with params:', finalUrl);
-                    const redirectOptions = {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    };
-                    const redirectReq = https.request(finalUrl, redirectOptions, (redirectRes) => {
-                        let redirectBody = '';
-                        redirectRes.on('data', (chunk) => redirectBody += chunk);
-                        redirectRes.on('end', () => {
-                            console.log('Redirect GET response status:', redirectRes.statusCode);
-                            if (redirectRes.statusCode < 200 || redirectRes.statusCode >= 300) {
-                                reject(new Error('Google Script redirect returned status ' + redirectRes.statusCode + ': ' + redirectBody));
-                            } else {
-                                resolve({ status: redirectRes.statusCode, body: redirectBody });
-                            }
-                        });
-                    });
-                    redirectReq.on('error', (err) => reject(err));
-                    redirectReq.end();
+                    resolve({ status: res.statusCode, body });
                 } else if (res.statusCode < 200 || res.statusCode >= 300) {
                     console.error('Non-200 response from Google Script:', res.statusCode, body);
                     reject(new Error('Google Script returned status ' + res.statusCode + ': ' + body));
