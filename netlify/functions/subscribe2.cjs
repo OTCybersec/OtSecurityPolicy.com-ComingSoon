@@ -7,7 +7,7 @@ const https = require('https');
 function postToGoogleScript(data) {
     return new Promise((resolve, reject) => {
         const postData = JSON.stringify(data);
-        const url = new URL('https://script.google.com/macros/s/AKfycbxSOI1y0y530Q4tgEesP4oTETjOKNXj0e4Lht5AhDn95gUdKN6gFMWgtRC3WIalRXLJ/exec'); // Update this to your new deployment ID if it changes
+        const url = new URL('https://script.google.com/macros/s/AKfycbwZzpmw33im4GnTuJ1rKN_DburuPeWa7-tIJINUv0XZz2u4CsrQ7R5oyom5SISgkPTn/exec'); // Update this to your new deployment ID if it changes
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
@@ -33,7 +33,7 @@ function postToGoogleScript(data) {
             console.error('HTTPS request error:', err);
             reject(err);
         });
-        req.setTimeout(25000, () => {
+        req.setTimeout(10000, () => {
             console.error('HTTPS request timed out');
             req.destroy(new Error('Request timed out'));
             reject(new Error('Request timed out'));
